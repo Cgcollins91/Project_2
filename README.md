@@ -1,7 +1,7 @@
 # ENPM_661_Project_2
  Project 2 implementing Dijkstra and BFS Search for a point robot navigating obstacles
 
-Chris Collins, UID: 110697305
+Chris Collins, 
 
 I created my project 2 code in VS Code using code blocks. 
 
