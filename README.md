@@ -69,3 +69,5 @@ For Djikstra's Algorithm:
 
 
 The code is well documented
+
+Note for the BFS implementation the Cost Matrix is not a true cost, it just shows the order in which the nodes were visited sequentially 
