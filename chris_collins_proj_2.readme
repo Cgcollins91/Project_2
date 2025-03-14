@@ -1,4 +1,9 @@
+# ENPM_661_Project_2
+ Project 2 implementing Dijkstra and BFS Search for a point robot navigating obstacles
+
 Chris Collins, UID: 110697305
+
+GitHub: https://github.com/Cgcollins91/Project_2
 
 I created my project 2 code in VS Code using code blocks. 
 
@@ -11,7 +16,7 @@ The second block is used to define 1 of 3 test cases and the path to save the ou
    so the input provided is ["Dropbox", "UMD", "ENPM_671 - Path Planning for Robots"]
 
 Test Cases:
-  - case = 1 : Runs a pre-defined start/goal-state 
+  - case = 1 : Runs a pre-defined start/goal-state from the top-left corner of the map to the bottom right corner
   - case = 2 : Prompt user to enter start/goal-state coordinates in terminal
   - case = 3 : Generate Random Valid Start/Goal-States
 
@@ -65,4 +70,5 @@ For Djikstra's Algorithm:
         explored_path: List of all nodes expanded by the algorithm in search
 
 
-The code is well documented
+In dijkstra_chris_collins.py I added a 3rd and 4th cell, where the 3rd cell runs a A_star using octile distance as our heuristic funciton 
+and the 4th cell runs some test edge cases

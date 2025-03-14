@@ -232,7 +232,6 @@ def draw(map_img, start_x, start_y, letter='E'):
     h, w = map_img.shape
     for py in range(h):
         for px in range(w):
-            # convert from top-left to bottom-left
             x_bl = px
             y_bl = py
 
@@ -298,10 +297,10 @@ def create_cost_matrix(map_img):
 
 
 def move_up(node):
-    return (node[0], node[1] - 1), 1
+    return (node[0], node[1] + 1), 1
 
 def move_down(node):
-    return (node[0], node[1] + 1), 1
+    return (node[0], node[1] - 1), 1
 
 def move_left(node):
     return (node[0] - 1, node[1]), 1
@@ -310,16 +309,16 @@ def move_right(node):
     return (node[0] + 1, node[1]), 1
 
 def move_up_left(node):
-    return (node[0] - 1, node[1] - 1), 1.4
-
-def move_up_right(node):
-    return (node[0] + 1, node[1] - 1), 1.4
-
-def move_down_left(node):
     return (node[0] - 1, node[1] + 1), 1.4
 
-def move_down_right(node):
+def move_up_right(node):
     return (node[0] + 1, node[1] + 1), 1.4
+
+def move_down_left(node):
+    return (node[0] - 1, node[1] - 1), 1.4
+
+def move_down_right(node):
+    return (node[0] + 1, node[1] - 1), 1.4
 
 
 def is_valid_move(node, map_img):
@@ -330,6 +329,40 @@ def is_valid_move(node, map_img):
     if map_img[y, x] == 0:
         return False
     return True
+
+def check_validity_with_user(map_data, start_state, goal_state, max_attempts=50):
+    """
+    Check if initial and goal states are valid, if not prompt user to input new states
+
+    start_state: Initial state of point robot
+    goal_state:  Goal state of point robot
+    map_data:         Map with obstacles
+
+    Returns:    Tuple of valid start and goal states
+
+    """
+    i = 0
+
+    while True:
+        try:
+            i += 1
+            if not is_valid_move(start_state, map_data): # Check if initial state is valid, if not prompt user to input new state
+                print("Initial state is invalid")
+                start_state = tuple(map(int, input(f"{str(start_state)} invalid, Enter new start state (x y) as two numbers seperated by space: ").split()))
+
+            if not is_valid_move(goal_state, map_data): # Check if goal state is valid, if not prompt user to input new state
+                print("Goal state is invalid")
+                goal_state = tuple(map(int, input(f"{str(goal_state)} invalid, Enter new goal state (x y) as two numbers seperated by space: ").split()))
+
+            if is_valid_move(start_state, map_data) and is_valid_move(goal_state, map_data): # If both states are valid, plot map_data with start and goal states
+                return start_state, goal_state
+            
+            if i > max_attempts: # if User has tried more than 50 times, exit
+                print("Too many attempts, exiting")
+                return None, None
+        except:
+            print("Invalid input")
+            continue
 
 
 def generate_path(parent, goal_state):
@@ -374,41 +407,6 @@ def plot_cost_matrix(cost_matrix, start_state, goal_state,  title="Cost Matrix H
     ncol=2
     )
     plt.show()
-
-
-def check_validity_with_user(map_data, start_state, goal_state, max_attempts=50):
-    """
-    Check if initial and goal states are valid, if not prompt user to input new states
-
-    start_state: Initial state of point robot
-    goal_state:  Goal state of point robot
-    map_data:         Map with obstacles
-
-    Returns:    Tuple of valid start and goal states
-
-    """
-    i = 0
-
-    while True:
-        try:
-            i += 1
-            if not is_valid_move(start_state, map_data): # Check if initial state is valid, if not prompt user to input new state
-                print("Initial state is invalid")
-                start_state = tuple(map(int, input("Enter new start state (x y) as two numbers seperated by space: ").split()))
-
-            if not is_valid_move(goal_state, map_data): # Check if goal state is valid, if not prompt user to input new state
-                print("Goal state is invalid")
-                goal_state = tuple(map(int, input("Enter new goal state (x y) as two numbers seperated by space: ").split()))
-
-            if is_valid_move(start_state, map_data) and is_valid_move(goal_state, map_data): # If both states are valid, plot map_data with start and goal states
-                return start_state, goal_state
-            
-            if i > max_attempts: # if User has tried more than 50 times, exit
-                print("Too many attempts, exiting")
-                return None, None
-        except:
-            print("Invalid input")
-            continue
 
 
 def solution_path_video(map_data, solution_path, save_folder_path, algo="Dijkstra"):
@@ -487,8 +485,8 @@ def generate_random_state(map_img, obstacles):
     """
     h, w = map_img.shape
     while True:
-        x = np.random.randint(0, w)
-        y = np.random.randint(0, h)
+        x = np.random.randint(0, w-2)
+        y = np.random.randint(0, h-2)
         if (x, y) not in obstacles:
             return (x, y)
 
@@ -513,19 +511,19 @@ def get_map_cost_matrix():
     start_x  = start_x + 18
     map_img = draw(map_img, start_x, start_y, letter='M')
 
-    start_x = start_x  + 35
+    start_x = start_x  + 37
     map_img = draw(map_img, start_x, start_y, letter='6')
 
-    start_x   = start_x + 24
+    start_x   = start_x + 26
     map_img = draw(map_img, start_x, start_y, letter='6')
 
-    start_x   = start_x + 23
+    start_x   = start_x + 25
     map_img = draw(map_img, start_x, start_y, letter='1')
 
     map_with_clearance = add_buffer(map_img)
     obstacles          = np.where(map_with_clearance == 0)
-    obstacles          = set(zip(obstacles[0], obstacles[1]))
-    cost_matrix        = create_cost_matrix(map_img)
+    obstacles          = set(zip(obstacles[1], obstacles[0]))
+    cost_matrix        = create_cost_matrix(map_with_clearance)
 
     plt.figure(figsize=(10, 10))
     plt.imshow(map_img, cmap='gray', origin='lower')
@@ -543,9 +541,9 @@ def get_map_cost_matrix():
     return map_img, map_with_clearance, cost_matrix, obstacles
 
 
-def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_path=None):
+def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_path=None, algo='Dijkstra'):
     '''
-    Main function to run Dijkstra's Algorithm to find lowest cost / shortest path from start to goal state
+    Main function to run Dijkstra's or A_Star Search to find lowest cost / shortest path from start to goal state
     and create videos of solution path and explored path
 
 
@@ -562,6 +560,7 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
     (map_data, map_with_clearance, cost_matrix, obstacles 
     )= get_map_cost_matrix() 
     map_data_wit_clearence   = map_with_clearance.copy()   # Copy map_data with obstacles and clearance
+    
     end = time.time()
     
     # Step 2: Get Start/ Goal State, either from user or generate random valid start/ goal state
@@ -569,7 +568,7 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
         while not found_valid:
             start_state = generate_random_state(map_data_wit_clearence, obstacles)
             goal_state  = generate_random_state(map_data_wit_clearence, obstacles)
-            if is_valid_move(start_state, map_data) and is_valid_move(goal_state, map_data_wit_clearence):
+            if is_valid_move(start_state, map_data_wit_clearence) and is_valid_move(goal_state, map_data_wit_clearence):
                 found_valid = True
                 print("Start State: ", start_state)
                 print("Goal State: ", goal_state)
@@ -581,24 +580,52 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
             if not is_valid_move(goal_state, map_data_wit_clearence):
                 goal_state  = generate_random_state(map_data_wit_clearence, obstacles)
 
+    
     else: # Use User Provided Start/ Goal State
-        start_state, goal_state = check_validity_with_user(map_data_wit_clearence, start_in, goal_in)
+        start_state, goal_state = check_validity_with_user(map_data_wit_clearence, start_in, goal_in)# Use User Provided Start/ Goal State
 
-    # Step 3: Run Dijkstra's Algorithm
+    # Step 3: Run Search Algorithm
     start = time.time()
-    (solution_path, cost_to_come, parent, cost_matrix, explored_path
-    ) = dijkstra (start_state, goal_state, map_data_wit_clearence, cost_matrix, obstacles)
+    if algo == 'Dijkstra':
+        # Run Dijkstra's Algorithm
+        (solution_path, cost_to_come, parent, cost_matrix, explored_path
+        ) = dijkstra (start_state, goal_state, map_data, cost_matrix, obstacles)
+
+    elif algo == 'A_star':
+        # Run A* Algorithm
+        (solution_path, cost_to_come, parent, cost_matrix, explored_path
+        ) = a_star(start_state, goal_state, map_data, cost_matrix, obstacles)
 
     # Plot Heat Map of Cost Matrix
     plot_cost_matrix(cost_matrix, start_state, goal_state, title="Cost Matrix Heatmap" )
 
-    # Create Videos of Solution Path and Explored Path
-    solution_path_video(map_data , solution_path, save_folder_path, algo="Dijkstra")
-    explored_path_video(map_data , explored_path, save_folder_path, algo="Dijkstra")
+    if solution_path:
+        # Create Videos of Solution Path and Explored Path
+        solution_path_video(map_data , solution_path, save_folder_path, algo=algo)
+        explored_path_video(map_data , explored_path, save_folder_path, algo=algo)
 
+    else:
+        print("No solution found, aborting video generation")
     end = time.time()
     print("Time to Find Path, Plot Cost Matrix, and create videos: ", round((end-start), 2), " seconds")
 
+    return start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles, solution_path, cost_to_come, parent, explored_path
+
+
+def octile_distance(node, goal_state):
+    """
+    Calculate Octile Distance between current node and goal state
+    Octile Distance is the maximum of the horizontal and vertical distances plus the minimum of the horizontal and vertical distances
+    This is the distance metric used in A* Search
+
+    node:       Current state of point robot
+    goal_state: Goal state of point robot
+
+    Returns:    Octile Distance between current node and goal state
+    """
+    dx = abs(node[0] - goal_state[0])
+    dy = abs(node[1] - goal_state[1])
+    return max(dx, dy) + (math.sqrt(2)-1) * min(dx, dy)
 
 def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
     """
@@ -640,16 +667,16 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
 
     Returns:     
         solution_path: List of states from the start state to goal state
-        cost_to_come:   Dictionary of cost to reach each node
+        cost_to_come:  Dictionary of cost to reach each node
         parent:        Dictionary mapping child states to parent states
         cost_matrix:   Cost matrix with updated costs to reach each node
         explored_path: List of all nodes expanded by the algorithm in search
 
     """
     solution_path = None
-    pq            = []
+    pq            = [] # Open List
     cost_to_come  = {} # Closed List
-    explored_path = []
+    explored_path = [] # List of all nodes expanded in search
     parent        = {start_state: None}  # Dictionary to map child->parent to backtrack path to goal state
 
     cost_to_come[start_state]                   = 0.0   # cost_to_come is our Closed List
@@ -683,12 +710,13 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
             move_down_right(curr_node)
         ]
 
-        for next_node, cost in possible_moves:   # For each move, check if it is valid and not an obstacle
+        for next_node, next_cost in possible_moves:   # For each move, check if it is valid and not an obstacle
             valid_move   = is_valid_move(next_node, map_data)
             not_obstacle = next_node not in obstacles
 
             if valid_move and not_obstacle:     # Check if next node is valid and not on top of an obstacle
-                new_cost = cost_to_come[curr_node] + cost
+                
+                new_cost = cost_to_come[curr_node] + next_cost
 
                 # Check if next has not been visited or if new cost is lower than previous cost to reach node
                 # For cases where we've found a lower cost to reach a node, we update the cost_to_come, parent, and cost_matrix
@@ -702,20 +730,125 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
 
     if solution_path is None:
         print("No Solution Found")
+    
+    print("Dijkstra Expanded States: ", len(explored_path))
 
     return solution_path, cost_to_come, parent, cost_matrix, explored_path
 
+def a_star(start_state, goal_state, map_data, cost_matrix, obstacles):
+    """
+    Perform A* Search to find shortest path from start state to goal state based on provided map
+    and an 8-connected grid.
 
-# %%  Main Function
+    Data Structure and Algorithm are same as Dijkstra's Algorithm, but we use Octile Distance to goal 
+    from current state as our heuristic function + cost to come to current state.  The only thing we need
+    to change relative to Dijkstra's Algorithm is to prioritze our queue based on cost_to_come + heuristic cost
+    to reach goal.
 
-if __name__ == "__main__":
-    save_folder_path = ["Dropbox", "UMD", "ENPM_671 - Path Planning for Robots", "Project_2"]
-    case             = 1
+    I started with Manhatten Distance and then realized that Octile Distance was a better heuristic function
+    for a 8-connected grid
 
+    Parameters:
+        start_state: Initial state of point robot as tuple of (x, y) coordinates
+        goal_state:  Goal state of point robot as tuple of (x, y) coordinates
+        map_data:    Map with obstacles
+        cost_matrix: Cost matrix with obstacles as -1 and free space as infinity
+        obstacles:   Set of obstacle coordinates
+
+    Returns:     
+        solution_path: List of states from the start state to goal state
+        cost_to_come:   Dictionary of cost to reach each node
+        parent:        Dictionary mapping child states to parent states
+        cost_matrix:   Cost matrix with updated costs to reach each node
+        explored_path: List of all nodes expanded by the algorithm in search
+
+    """
+    solution_path = None
+    pq            = [] # Open List
+    cost_to_come  = {} # Closed List
+    explored_path = [] # List of all nodes expanded in search
+    parent        = {start_state: None}  # Dictionary to map child->parent to backtrack path to goal state
+    f_start       = octile_distance(start_state, goal_state) # Heuristic function for start state 
+
+    cost_to_come[start_state]                   = 0.0   # cost_to_come is our Closed List
+    cost_matrix[start_state[1], start_state[0]] = f_start   # we'll store cost to reach node + heuristic cost to reach goal
+
+    heapq.heappush(pq, (f_start, start_state))              # pq is our Open List
+
+    while pq:
+        curr_f, curr_node = heapq.heappop(pq) # Pop node with lowest cost from priority queue
+        
+        if curr_node == goal_state:              # If goal state reached, generate path from start to gaol and break the loop
+            solution_path = generate_path(parent, goal_state)
+            print("Found Solution to Goal:")
+            print(goal_state)
+            print("Cost: ", cost_to_come[curr_node])
+            break
+
+        if curr_f > cost_to_come[curr_node] + octile_distance(curr_node, goal_state):   # If we've found lower cost for this node, 
+            continue                              # skip and don't expand this node
+        else:                                     # Only add node to explored path if it is visited and expanded
+            explored_path.append(curr_node)       # If we've found a lower cost for the node, then we have already explored it
+
+        possible_moves = [                        # Generate all possible moves from current state
+            move_up(curr_node),
+            move_down(curr_node),
+            move_left(curr_node),
+            move_right(curr_node),
+            move_up_left(curr_node),
+            move_up_right(curr_node),
+            move_down_left(curr_node),
+            move_down_right(curr_node)
+        ]
+
+        for next_node, next_cost in possible_moves:   # For each move, check if it is valid and not an obstacle
+            valid_move   = is_valid_move(next_node, map_data)
+            not_obstacle = next_node not in obstacles
+
+            if valid_move and not_obstacle:     # Check if next node is valid and not on top of an obstacle
+                
+                # We don't use our heuristic function here, we just use the cost to come to the current node + cost to reach next node
+                # This is the parameter we want to minimize, but we use the heuristic function to prioritize our queue
+                new_cost = cost_to_come[curr_node] + next_cost
+
+                # Check if next has not been visited or if new cost is lower than previous cost to reach node
+                # For cases where we've found a lower cost to reach a node, we update the cost_to_come, parent, and cost_matrix
+                # and add the node back-in to the priority queue without removing the old node, if the old node is reached again
+                # we skip it with the continue statement above
+                if next_node not in cost_to_come or new_cost < cost_to_come[next_node]: 
+                    cost_to_come[next_node]  = new_cost
+                    parent[next_node]        = curr_node
+                    # Add Heurstic cost to reach goal to cost to come to current node for prioritization
+                    f_next                   = new_cost + octile_distance(next_node, goal_state)
+                    heapq.heappush(pq, (f_next, next_node))
+                    cost_matrix[next_node[1], next_node[0]] = new_cost
+
+    if solution_path is None:
+        print("No Solution Found")
+
+    print("A_star Expanded States: ", len(explored_path))
+
+    return solution_path, cost_to_come, parent, cost_matrix, explored_path
+
+def run_test_cases(algo='Dijkstra'):
+
+    test_points =[(1, 49), (1, 1), (179, 1), (179, 49), (5, 52), (181, 2)]
+    for test_point in test_points:
+        print("Test Point: ", test_point)
+        start_in = (test_point[0], test_point[1])
+        goal_in  = (75, 4)
+        generate_random = False
+        start_in = test_point
+
+        (start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles, 
+        solution_path, cost_to_come, parent, explored_path)  =  main(
+            generate_random=generate_random, start_in=start_in, goal_in=goal_in, save_folder_path=save_folder_path, algo=algo)
+        
+def run_case(case=1, algo='Dijkstra'):
     if case == 1: # Valid Inputs provided (used for video creation that was submitted)
         generate_random = False
-        start_in = (80, 5)
-        goal_in  = (30, 45)
+        start_in = (2, 48)
+        goal_in  = (175, 2)
 
     elif case == 2: # Invalid Inputs provided (User Passes Start / Goal State)
         generate_random = False
@@ -727,6 +860,35 @@ if __name__ == "__main__":
         start_in = (5, 48)
         goal_in  = (175, 2)
 
-    main(generate_random=generate_random, start_in=start_in, goal_in=goal_in, save_folder_path=save_folder_path)
 
-# %%
+    (start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles, 
+    solution_path, cost_to_come, parent, explored_path)  =  main(
+        generate_random=generate_random, start_in=start_in, goal_in=goal_in, save_folder_path=save_folder_path, algo=algo)
+    
+    return start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles, solution_path, cost_to_come, parent, explored_path
+
+# %%  Main Function to run Dijkstra's Algorithm
+
+if __name__ == "__main__":
+    save_folder_path = ["Dropbox", "UMD", "ENPM_671 - Path Planning for Robots", "Project_2"]
+    case             = 1
+    algo             = "Dijkstra"
+
+    (start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles,
+    solution_path, cost_to_come, parent, explored_path) = run_case(case=case, algo=algo)   
+
+
+# %%  Main Function to run A_star Algorithm
+algo = "A_star"
+if __name__ == "__main__":
+    save_folder_path = ["Dropbox", "UMD", "ENPM_671 - Path Planning for Robots", "Project_2"]
+    case             = 1
+    algo             = "A_star"
+
+    (start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles,
+    solution_path, cost_to_come, parent, explored_path) = run_case(case=case, algo=algo)   
+
+
+
+# %% Check some Edge cases functionality
+run_test_cases()

@@ -232,7 +232,6 @@ def draw(map_img, start_x, start_y, letter='E'):
     h, w = map_img.shape
     for py in range(h):
         for px in range(w):
-            # convert from top-left to bottom-left
             x_bl = px
             y_bl = py
 
@@ -298,10 +297,10 @@ def create_cost_matrix(map_img):
 
 
 def move_up(node):
-    return (node[0], node[1] - 1), 1
+    return (node[0], node[1] + 1), 1
 
 def move_down(node):
-    return (node[0], node[1] + 1), 1
+    return (node[0], node[1] - 1), 1
 
 def move_left(node):
     return (node[0] - 1, node[1]), 1
@@ -310,16 +309,16 @@ def move_right(node):
     return (node[0] + 1, node[1]), 1
 
 def move_up_left(node):
-    return (node[0] - 1, node[1] - 1), 1.4
-
-def move_up_right(node):
-    return (node[0] + 1, node[1] - 1), 1.4
-
-def move_down_left(node):
     return (node[0] - 1, node[1] + 1), 1.4
 
-def move_down_right(node):
+def move_up_right(node):
     return (node[0] + 1, node[1] + 1), 1.4
+
+def move_down_left(node):
+    return (node[0] - 1, node[1] - 1), 1.4
+
+def move_down_right(node):
+    return (node[0] + 1, node[1] - 1), 1.4
 
 def is_valid_move(node, map_img):
     h, w = map_img.shape
@@ -329,6 +328,42 @@ def is_valid_move(node, map_img):
     if map_img[y, x] == 0:
         return False
     return True
+
+
+def check_validity_with_user(map_data, start_state, goal_state, max_attempts=50):
+    """
+    Check if initial and goal states are valid, if not prompt user to input new states
+
+    start_state: Initial state of point robot
+    goal_state:  Goal state of point robot
+    map_data:         Map with obstacles
+
+    Returns:    Tuple of valid start and goal states
+
+    """
+    i = 0
+
+    while True:
+        try:
+            i += 1
+            if not is_valid_move(start_state, map_data): # Check if initial state is valid, if not prompt user to input new state
+                print("Initial state is invalid")
+                start_state = tuple(map(int, input(f"{str(start_state)} invalid, Enter new start state (x y) as two numbers seperated by space: ").split()))
+
+            if not is_valid_move(goal_state, map_data): # Check if goal state is valid, if not prompt user to input new state
+                print("Goal state is invalid")
+                goal_state = tuple(map(int, input(f"{str(goal_state)} invalid, Enter new goal state (x y) as two numbers seperated by space: ").split()))
+
+            if is_valid_move(start_state, map_data) and is_valid_move(goal_state, map_data): # If both states are valid, plot map_data with start and goal states
+                return start_state, goal_state
+            
+            if i > max_attempts: # if User has tried more than 50 times, exit
+                print("Too many attempts, exiting")
+                return None, None
+        except:
+            print("Invalid input")
+            break
+
 
 def generate_path(parent, goal_state):
     """
@@ -374,53 +409,16 @@ def plot_cost_matrix(cost_matrix, start_state, goal_state,  title="Cost Matrix H
     plt.show()
 
 
-def check_validity_with_user(map_data, start_state, goal_state, max_attempts=50):
-    """
-    Check if initial and goal states are valid, if not prompt user to input new states
-
-    start_state: Initial state of point robot
-    goal_state:  Goal state of point robot
-    map_data:         Map with obstacles
-
-    Returns:    Tuple of valid start and goal states
-
-    """
-    i = 0
-
-    while True:
-        try:
-            i += 1
-            if not is_valid_move(start_state, map_data): # Check if initial state is valid, if not prompt user to input new state
-                print("Initial state is invalid")
-                start_state = tuple(map(int, input("Enter new start state (x y) as two numbers seperated by space: ").split()))
-
-            if not is_valid_move(goal_state, map_data): # Check if goal state is valid, if not prompt user to input new state
-                print("Goal state is invalid")
-                goal_state = tuple(map(int, input("Enter new goal state (x y) as two numbers seperated by space: ").split()))
-
-            if is_valid_move(start_state, map_data) and is_valid_move(goal_state, map_data): # If both states are valid, plot map_data with start and goal states
-                return start_state, goal_state
-            
-            if i > max_attempts: # if User has tried more than 50 times, exit
-                print("Too many attempts, exiting")
-                return None, None
-        except:
-            print("Invalid input")
-            continue
-
-
 def solution_path_video(map_data, solution_path, save_folder_path, algo="Dijkstra"):
     fps       = 30
     h, w      = map_data.shape
     color_map = map_data.copy()
     color_map = cv2.cvtColor(map_data, cv2.COLOR_GRAY2RGB)
 
-    
     my_path      = os.path.expanduser("~")
 
     for folder in save_folder_path:
         my_path = os.path.join(my_path, folder)
-
 
     video_path   = os.path.join(my_path, "chris_collins_solution_proj2_" + algo + ".mp4")
 
@@ -485,8 +483,8 @@ def generate_random_state(map_img, obstacles):
     """
     h, w = map_img.shape
     while True:
-        x = np.random.randint(0, w)
-        y = np.random.randint(0, h)
+        x = np.random.randint(0, w-2)
+        y = np.random.randint(0, h-2)
         if (x, y) not in obstacles:
             return (x, y)
 
@@ -510,19 +508,19 @@ def get_map_cost_matrix():
     start_x  = start_x + 18
     map_img = draw(map_img, start_x, start_y, letter='M')
 
-    start_x = start_x  + 35
+    start_x = start_x  + 37
     map_img = draw(map_img, start_x, start_y, letter='6')
 
-    start_x   = start_x + 24
+    start_x   = start_x + 26
     map_img = draw(map_img, start_x, start_y, letter='6')
 
-    start_x   = start_x + 23
+    start_x   = start_x + 25
     map_img = draw(map_img, start_x, start_y, letter='1')
 
     map_with_clearance = add_buffer(map_img)
     obstacles          = np.where(map_with_clearance == 0)
-    obstacles          = set(zip(obstacles[0], obstacles[1]))
-    cost_matrix        = create_cost_matrix(map_img)
+    obstacles          = set(zip(obstacles[1], obstacles[0]))
+    cost_matrix        = create_cost_matrix(map_with_clearance)
 
     plt.figure(figsize=(10, 10))
     plt.imshow(map_img, cmap='gray', origin='lower')
@@ -568,8 +566,10 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
         while not found_valid:
             start_state = generate_random_state(map_data_wit_clearence, obstacles)
             goal_state  = generate_random_state(map_data_wit_clearence, obstacles)
-            if is_valid_move(start_state, map_data) and is_valid_move(goal_state, map_data_wit_clearence):
+            if is_valid_move(start_state, map_data_wit_clearence) and is_valid_move(goal_state, map_data_wit_clearence):
                 found_valid = True
+                print("Start State: ", start_state)
+                print("Goal State: ", goal_state)
                 break
 
             if not is_valid_move(start_state, map_data_wit_clearence):
@@ -587,11 +587,14 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
     ) = bfs (start_state, goal_state, map_data_wit_clearence, cost_matrix, obstacles)
 
     # Plot Heat Map of Cost Matrix
-    plot_cost_matrix(cost_matrix, start_state, goal_state, title="Cost Matrix Heatmap" )
+    plot_cost_matrix(cost_matrix, start_state, goal_state, title="Order of Exploration Heatmap" )
 
-    # Create Videos of Solution Path and Explored Path
-    solution_path_video(map_data , solution_path, save_folder_path, algo="BFS")
-    explored_path_video(map_data , explored_path, save_folder_path, algo="BFS")
+    if solution_path:
+        # Create Videos of Solution Path and Explored Path
+        solution_path_video(map_data , solution_path, save_folder_path, algo="BFS")
+        explored_path_video(map_data , explored_path, save_folder_path, algo="BFS")
+    else:
+        print("No Solution Found, Aborting Video Generation")
 
     end = time.time()
     print("Time to Find Path, Plot Cost Matrix, and create videos: ", round((end-start), 2), " seconds")
@@ -631,14 +634,14 @@ def bfs(start_state, goal_state, map, cost_matrix, obstacles):
 
     visited       = {start_state}
     explored_path = []
-    cost_so_far   = {}
+    cost_to_come  = {}
     new_cost      = 0 
     # Index dictionaries
     node_index        = {start_state: 0}     # start node has index 0
     parent_node_index = {start_state: None}
     next_index        = 1  # The next index to assign
 
-    cost_so_far[start_state]                    = 0.0
+    cost_to_come[start_state]                    = 0.0
     cost_matrix[start_state[1], start_state[0]] = 0.0
 
     solution_path      = None
@@ -683,7 +686,7 @@ def bfs(start_state, goal_state, map, cost_matrix, obstacles):
                     parent[next_node]     = curr_node
                     node_index[next_node] = next_index
                     parent_node_index[next_node] = node_index[curr_node]
-                    cost_so_far[next_node] = new_cost
+                    cost_to_come[next_node] = new_cost
                     next_index += 1
                     cost_matrix[next_node[1], next_node[0]] = new_cost
 
@@ -697,8 +700,8 @@ if __name__ == "__main__":
     case             = 1
     if case == 1: # Pre-Define Test Case for comparison to BFS (used for video creation that was submitted)
         generate_random = False
-        start_in = (80, 5)
-        goal_in  = (30, 45)
+        start_in = (110, 28)
+        goal_in  = (175, 25)
 
     elif case == 2: # Invalid Inputs provided (User Passes Start / Goal State)
         generate_random = False
