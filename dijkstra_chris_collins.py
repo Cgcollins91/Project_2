@@ -635,7 +635,7 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
     
     Data Structure Selection:
         We use a priority queue (heapq) as our Open List to add nodes to visit as we search
-        Priority queues are type of queue where each element is associated with priority and element with the highest priority is served
+        Priority queues are type of queue where each element is associated with priority and element with highest priority is served
         before an element with lower priority -- Priority queues are implemented as binary heaps that have one of the following properties:
          - Min-Heap Property: For every node in the tree, the key is Less than or equal to the keys of its children
          - Max-Heap Property: For every node in the tree, the key is Greater than or equal to the keys of its children
@@ -668,16 +668,16 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
 
     Returns:     
         solution_path: List of states from the start state to goal state
-        cost_to_come:  Dictionary of cost to reach each node
+        cost_to_come:  Dictionary of lowest cost to reach each node
         parent:        Dictionary mapping child states to parent states
         cost_matrix:   Cost matrix with updated costs to reach each node
         explored_path: List of all nodes expanded by the algorithm in search
 
     """
     solution_path = None
-    pq            = [] # Open List
-    cost_to_come  = {} # Closed List
-    explored_path = [] # List of all nodes expanded in search
+    pq            = []                   # Open List
+    cost_to_come  = {}                   # Closed List
+    explored_path = []                   # List of all nodes expanded in search
     parent        = {start_state: None}  # Dictionary to map child->parent to backtrack path to goal state
 
     cost_to_come[start_state]                   = 0.0   # cost_to_come is our Closed List
@@ -715,7 +715,7 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
             valid_move   = is_valid_move(next_node, map_data)
             not_obstacle = next_node not in obstacles
 
-            if valid_move and not_obstacle:     # Check if next node is valid and not on top of an obstacle
+            if valid_move and not_obstacle:           # Check if next node is valid and not on top of an obstacle
                 
                 new_cost = cost_to_come[curr_node] + next_cost
 
@@ -725,7 +725,7 @@ def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
                 # we skip it with the continue statement above
                 if next_node not in cost_to_come or new_cost < cost_to_come[next_node]: 
                     cost_to_come[next_node]       = new_cost
-                    parent[next_node]            = curr_node
+                    parent[next_node]             = curr_node
                     heapq.heappush(pq, (new_cost, next_node))
                     cost_matrix[next_node[1], next_node[0]] = new_cost
 
@@ -853,8 +853,8 @@ def run_case(case=1, algo='Dijkstra'):
 
     elif case == 2: # Invalid Inputs provided (User Passes Start / Goal State)
         generate_random = False
-        start_in = (5, 48)
-        goal_in  = (175, 2)
+        start_in = (5, 52)
+        goal_in  = (181, 2)
     
     elif case == 3: # Generate Random Valid Start/ Goal Points
         generate_random = True
