@@ -597,7 +597,7 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
         ) = a_star(start_state, goal_state, map_data, cost_matrix, obstacles)
 
     # Plot Heat Map of Cost Matrix
-    plot_cost_matrix(cost_matrix, start_state, goal_state, title="Cost Matrix Heatmap" )
+    plot_cost_matrix(cost_matrix, start_state, goal_state, title=f"Cost Matrix Heatmap {algo}" )
 
     if solution_path:
         # Create Videos of Solution Path and Explored Path
@@ -615,8 +615,8 @@ def main(generate_random=True, start_in=(5, 48), goal_in=(175, 2), save_folder_p
 def octile_distance(node, goal_state):
     """
     Calculate Octile Distance between current node and goal state
-    Octile Distance is the maximum of the horizontal and vertical distances plus the minimum of the horizontal and vertical distances
-    This is the distance metric used in A* Search
+    Octile Distance is maximum of horizontal and vertical distances plus minimum of the horizontal and vertical distances
+    distance metric used in A* Search
 
     node:       Current state of point robot
     goal_state: Goal state of point robot
@@ -626,6 +626,7 @@ def octile_distance(node, goal_state):
     dx = abs(node[0] - goal_state[0])
     dy = abs(node[1] - goal_state[1])
     return max(dx, dy) + (math.sqrt(2)-1) * min(dx, dy)
+
 
 def dijkstra(start_state, goal_state, map_data, cost_matrix, obstacles):
     """
@@ -871,7 +872,7 @@ def run_case(case=1, algo='Dijkstra'):
 
 if __name__ == "__main__":
     save_folder_path = ["Dropbox", "UMD", "ENPM_671 - Path Planning for Robots", "Project_2"]
-    case             = 1
+    case             = 3
     algo             = "Dijkstra"
 
     (start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles,
@@ -882,7 +883,7 @@ if __name__ == "__main__":
 algo = "A_star"
 if __name__ == "__main__":
     save_folder_path = ["Dropbox", "UMD", "ENPM_671 - Path Planning for Robots", "Project_2"]
-    case             = 1
+    case             = 3
     algo             = "A_star"
 
     (start_state, goal_state, map_data, map_with_clearance, cost_matrix, obstacles,
