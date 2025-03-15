@@ -1,7 +1,7 @@
 # ENPM_661_Project_2
  Project 2 implementing Dijkstra and BFS Search for a point robot navigating obstacles
 
-Chris Collins, UID: 110697305
+Chris Collins, 
 
 GitHub: https://github.com/Cgcollins91/Project_2
 
@@ -72,3 +72,5 @@ For Djikstra's Algorithm:
 
 In dijkstra_chris_collins.py I added a 3rd and 4th cell, where the 3rd cell runs a A_star using octile distance as our heuristic funciton 
 and the 4th cell runs some test edge cases
+
+Note for the BFS implementation the Cost Matrix is not a true cost, it just shows the order in which the nodes were visited sequentially 
